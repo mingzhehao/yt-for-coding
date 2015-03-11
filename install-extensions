@@ -1,0 +1,59 @@
+一： 扩展的安装及使用
+
+0.如果你需要安装admin rdac 就需要在下面两个安装之前安装他
+    php composer.phar require mdmsoft/yii2-admin "dev-master"
+        a.代码的获取最近版本
+        b.web.php配置文件 基本部署，可以github上获取
+        c.需要数据库信息，需调整web.php配置 为
+            'class' => 'yii\rbac\DbManager', // or use 'yii\rbac\DbManager'
+        d.If You use database (class 'yii\rbac\DbManager') to save rbac data. Execute yii migration here:
+            (1).yii migrate --migrationPath=@yii/rbac/migrations
+            (2).使用这条指令 会报错 需要配置config/console.php  添加如下配置
+                'authManager' => [
+                    'class' => 'yii\rbac\DbManager', // or use 'yii\rbac\DbManager'
+                ],
+        e.后台添加rules  示例： name：admin ;class:\app\rbac\GlobalRule ,rbac\GlobalRule.php 要先建立 rbac目录 及GlobalRule.php文件
+
+1.ueditor 的安装  这个也需要顺序，需要和0步骤处理  区分下先后
+    php composer.phar require xj/yii2-ueditor-widget "*"
+    a.扩展中存在一个问题，
+        对路径的判断问题，在Uploader.php 310行 下面是我调整的
+       if ( (substr($fullname, 0, 1) != '/') && (substr($rootPath, -1, 1) !='/')  ) { 
+            $fullname = '/' . $fullname; 
+        }
+        return $rootPath . $fullname;
+    b.上传建立的目录时候 比如web/uploads/image  要chown -R nginx:nginx 授权  不然无权限创建
+                    
+
+2. php composer.phar require kartik-v/yii2-widgets "dev-master"
+
+#执行这步前 要修改 composer.json 中  "minimum-stability": "dev",
+3. php composer.phar require kartik-v/yii2-markdown "dev-master"
+
+
+
+
+注意:如何单独更新一个扩展
+    a.STEP 1: Update single vendor package only 
+    b.STEP 2: Update composer.lock 
+
+    1. 举例： php composer.phar update mdmsoft/yii2-admin
+    2. php composer.phar update --lock
+
+  方法2
+      github上下载此扩展  然后直接替换对应目录所在位置
+      git clone https://github.com/mdmsoft/yii2-admin.git
+
+
+注意：
+ 1.比如以前扩展我都已经安装了，现在我发现了ueditor编辑器，想要安装，
+  一般新安装的扩展都会和原有的发生冲突导致无法安装，
+  需要在另一套纯净版yii2 开始安装ueditor，这样一般都会安装成功
+  安装成功ueditor后， 怎么整合到现在的项目中呢？
+    a.将ueditor源代码数据copy到项目 执行目录中 （ 比如vendor下）
+    b.调整composer.json 添加扩展信息    ("xj/yii2-ueditor-widget": "*",)
+    c.需要autoload namespace 不然系统无法识别 vendor/composer/autoload_psr4.php 将ueditor在纯净版这个文件中的配置，
+    添加到项目中这个文件的同一位置。这样就可以正常使用扩展的namespace了
+
+    important:我发现最简单是 直接copy vendor目录所以文件  以及 composer.json 最方便,前提  copy的vendor都是可使用的
+
